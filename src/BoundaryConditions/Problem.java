@@ -5,10 +5,10 @@
  */
 package BoundaryConditions;
 
-import static Aux.Constants.DOWNSTREAM;
-import static Aux.Constants.UPSTREAM;
+import static Aux.Constants.CONVERGENCY_HEAD_THRESHOLD;
+import static Aux.Constants.STEADY_STATE;
+import static Aux.Constants.TRANSIENT;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import Pipe.Pipe;
@@ -28,9 +28,17 @@ public class Problem {
     int[][] linkTable;
 
     ArrayList<Pipe> pipes = new ArrayList<>();
+    ArrayList<Pipe> pipesTransient = new ArrayList<>();
+    ArrayList<Pipe> pipesSteadyState = new ArrayList<>();
     ArrayList<BoundaryCondition> boundaryConditions = new ArrayList<>();
+    ArrayList<BoundaryCondition> boundaryConditionsTransient = new ArrayList<>();
+    ArrayList<BoundaryCondition> boundaryConditionsSteadyState = new ArrayList<>();
     ArrayList<double[]> boundaryQ = new ArrayList<>();
     double[] boundaryH;
+    double[][] tableQpipes;
+    double[][] tableHpipes;
+    double[][] tableQBcs;
+    double[][] tableHBcs;
 
     /**
      *
@@ -46,30 +54,47 @@ public class Problem {
         this.model = model;
         this.simulationTime = simulationTime;
 
-        pipes = (ArrayList<Pipe>) parsedInput.get(0);
-        boundaryConditions = (ArrayList<BoundaryCondition>) parsedInput.get(1);
-        linkTable = (int[][]) parsedInput.get(2);
+        pipesTransient = (ArrayList<Pipe>) parsedInput.get(0);
+        pipesSteadyState = (ArrayList<Pipe>) parsedInput.get(1);
+        boundaryConditionsTransient = (ArrayList<BoundaryCondition>) parsedInput.get(2);
+        boundaryConditionsSteadyState = (ArrayList<BoundaryCondition>) parsedInput.get(3);
+        linkTable = (int[][]) parsedInput.get(4);
 
-        Collections.sort(pipes, new PipeComparator());
-        Collections.sort(boundaryConditions, new BCComparator());
+        tableQpipes = new double[linkTable.length][linkTable[0].length];
+        tableHpipes = new double[linkTable.length][linkTable[0].length];
+        tableQBcs = new double[linkTable.length][linkTable[0].length];
+        tableHBcs = new double[linkTable.length][linkTable[0].length];
 
+        Collections.sort(pipesTransient, new PipeComparator());
+        Collections.sort(boundaryConditionsTransient, new BCComparator());
+        Collections.sort(pipesSteadyState, new PipeComparator());
+        Collections.sort(boundaryConditionsSteadyState, new BCComparator());
     }
 
     /**
      *
-     * @return @throws IOException
+     * @param timeRegime If the problem is being calculated in steady state or
+     * transient stage.
+     * @return @throws Exception
      */
-    public int calculate() throws Exception {
-        int nTimeSteps = (int) Math.ceil(simulationTime / dt);
+    public int calculate(int timeRegime) throws Exception {
+        int nTimeSteps = (int) Math.ceil(simulationTime / dt), countConvergence = 0;
         int[] bcsPipe = new int[]{-1, -1};
         int[] pipesBc;
-        int i0 = 0, nPipes;
-        double[] HQ, HQPipeInput, HQBcInput;
+        int i0 = 0, nPipes, countConverge = 0;
+        double[] HQ, HQPipeInput, HQBcInput,
+                lastRecordedHeads = new double[pipesSteadyState.size()];
 
-        double[][] tableQpipes = new double[linkTable.length][linkTable[0].length];
-        double[][] tableHpipes = new double[linkTable.length][linkTable[0].length];
-        double[][] tableQBcs = new double[linkTable.length][linkTable[0].length];
-        double[][] tableHBcs = new double[linkTable.length][linkTable[0].length];
+        if (timeRegime == TRANSIENT) {
+            pipes = pipesTransient;
+            boundaryConditions = boundaryConditionsTransient;
+        } else {
+            pipes = pipesSteadyState;
+            boundaryConditions = boundaryConditionsSteadyState;
+        }
+
+        Collections.sort(pipes, new PipeComparator());
+        Collections.sort(boundaryConditions, new BCComparator());
 
         for (int tn = 0; tn < nTimeSteps; tn++) {
 
@@ -184,8 +209,54 @@ public class Problem {
             }
 
             i0 = Math.abs(i0 - 1);
+
+            // Check if steady state converged by comparring the current heads
+            // in the pipes to the head 20 time steps before. Copies heads and
+            // flow rates from steady state to transient objects.
+            if (timeRegime == STEADY_STATE) {
+                if (tn == 20) {
+                    // Counts how many pipes converged.
+                    for (int i = 0; i < pipes.size(); i++) {
+                        if (pipes.get(i).getQ1() <= lastRecordedHeads[i] / CONVERGENCY_HEAD_THRESHOLD
+                                && pipes.get(i).getQ1() >= lastRecordedHeads[i] * CONVERGENCY_HEAD_THRESHOLD) {
+                            countConverge++;
+                        }
+
+                        lastRecordedHeads[i] = pipes.get(i).getQ1();
+                    }
+
+                    // If all pipes converged, copy value.
+                    if (countConverge == pipes.size()) {
+                        tn = nTimeSteps;
+                        for (int i = 0; i < pipes.size(); i++) {
+                            pipesTransient.get(i).setSteadyState(pipesSteadyState.get(i).getSteadyState());
+                        }
+                        
+                        for (int i = 0; i < boundaryConditions.size(); i++) {
+                            boundaryConditionsTransient.get(i).setH(boundaryConditionsSteadyState.get(i).getH());
+                            boundaryConditionsTransient.get(i).setQ(boundaryConditionsSteadyState.get(i).getQ());
+                        }
+                    } else {
+                        // Reset counter and try again in a few time steps.
+                        countConverge = 0;
+                        tn = 0;
+                        countConvergence++;
+                    }
+                }
+            }
+
         }
 
+        System.out.println("Pipes:");
+        for (Pipe p : pipes) {
+            System.out.println(p.toString());
+        }
+
+        System.out.println("Boundary Conditions:");
+        for (BoundaryCondition bc : boundaryConditions) {
+            System.out.println(bc.toString());
+        }
+        
         return 0;
     }
 

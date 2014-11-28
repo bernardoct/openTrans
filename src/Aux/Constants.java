@@ -22,71 +22,7 @@ public class Constants {
     /**
      *
      */
-    public static final int ERROR = 0;
-    /**
-     *
-     */
-    public static final int YES_MOVIE = 1;
-    /**
-     *
-     */
-    public static final int YES_FRAMES = 1;
-    /**
-     *
-     */
-    public static final int NO_MOVIE = 0;
-    /**
-     *
-     */
-    public static final int NO_FRAMES = 0;
-    /**
-     *
-     */
     public static final double g = 9.806;
-    /**
-     *
-     */
-    public static final int CONTROL_HEAD = 1;
-    /**
-     *
-     */
-    public static final int CONTROL_FLOWRATE = 0;
-    /**
-     *
-     */
-    public static final double DT_SS = 1;
-    /**
-     *
-     */
-    public static final int SERIES = 1;
-    /**
-     *
-     */
-    public static final int FUNCTION = 0;
-    /**
-     *
-     */
-    public static final int CONST_HEAD = 1;
-    /**
-     *
-     */
-    public static final int CONST_FLOWRATE = 0;
-      /**
-       *
-       */
-      public static final int DEAD_END = -1;
-      /**
-       *
-       */
-      public static final int STOPS = 0;
-      /**
-       *
-       */
-      public static final int STARTS = 1;
-      /**
-       *
-       */
-      public static final int STAYS = 2;
       /**
        *
        */
@@ -99,5 +35,29 @@ public class Constants {
        * 
        */
       public static final int DGCM = 1;
+      /**
+       * 
+       */
+      public static final int STEADY_STATE = 0;
+      /**
+       * 
+       */
+      public static final int TRANSIENT = 1;
+      /**
+      *
+      */
+      public static final double DT_STEADY_STATE = 1;
+      /**
+       * 
+       */
+      public static final double CONVERGENCY_HEAD_THRESHOLD = 1-1e-6;
+      /**
+       * 
+       */
+      public static final int CONVERGED = 1;
+      /**
+       * 
+       */
+      public static final int STILL_HAVE_NOT_CONVERGED = 0;
 
 }

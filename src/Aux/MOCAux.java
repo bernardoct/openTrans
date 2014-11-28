@@ -96,8 +96,8 @@ public class MOCAux {
      * @return 
      */
     public static double calcB(double a, double A) {
-        double B_t = a / (g * A);     
-        return B_t;
+        double B = a / (g * A);     
+        return B;
     }
     
     /**
@@ -109,7 +109,7 @@ public class MOCAux {
      * @return 
      */
     public static double calcR(double f, double dX, double D, double A) {
-        double R_t = f * dX / (2 * g * D * pow(A, 2));   
-        return R_t;
+        double R = f * dX / (2 * g * D * pow(A, 2));   
+        return R;
     }
 }

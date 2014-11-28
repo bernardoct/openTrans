@@ -32,7 +32,6 @@ public class Junction extends BoundaryConditions.BoundaryCondition {
         double[] CP = new double[pipesHQ.length / 2], 
                 BP = new double[pipesHQ.length / 2];
         double[] bcHQ = new double[pipesHQ.length / 2 + 1];
-        double Qi;
 
         for (int i = 0; i < pipesHQ.length / 2; i++) {
             pipeH = pipesHQ[2 * i];
@@ -42,24 +41,22 @@ public class Junction extends BoundaryConditions.BoundaryCondition {
                 pipeQ = pipesHQ[2 * i + 1];
             }
 
-            CP[i] = calcCP(pipeH, pipeQ, B[i]);
-            BP[i] = calcBP(pipeQ, B[i], R[i]);
+            CP[i] = calcCP(pipeH, pipeQ, getB()[i]);
+            BP[i] = calcBP(pipeQ, getB()[i], getR()[i]);
 
             SB += 1 / BP[i];
             SC += CP[i] / BP[i];
         }
 
-        H = SC / SB;
+        setH(SC / SB);
 
-        bcHQ[0] = H;
+        bcHQ[0] = getH();
         for (int i = 0; i < pipesHQ.length / 2; i++) {
 
-            Qi = -H / BP[i] + CP[i] / BP[i];
+            Q[i] = -getH() / BP[i] + CP[i] / BP[i];
 
-            // Return the orientation of the first flow rate to its original.
-            Qi = (i == 0? -Qi: Qi);
-            
-            bcHQ[i + 1] = Qi;
+            // Return the orientation of the first flow rate to its original. 
+            bcHQ[i + 1] = (i == 0? -Q[i]: Q[i]);
         }
         
         return bcHQ;

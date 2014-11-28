@@ -6,6 +6,8 @@
 package Utils;
 
 import static Aux.Constants.SIMPLE_MOC;
+import static Aux.Constants.STEADY_STATE;
+import static Aux.Constants.TRANSIENT;
 import Pipe.Pipe;
 import java.util.ArrayList;
 import BoundaryConditions.BoundaryCondition;
@@ -29,43 +31,72 @@ public class InputParser {
      * @return
      */
     public static ArrayList parse() {
-        ArrayList<Pipe> pipes = new ArrayList<>();
-        ArrayList<BoundaryCondition> boundaryConditions = new ArrayList<>();
+        ArrayList<Pipe> pipesTransient = new ArrayList<>(), 
+                pipesSteadyState = new ArrayList<>();
+        ArrayList<BoundaryCondition> boundaryConditionsTransient = new ArrayList<>(),
+                boundaryConditionsSteadyState = new ArrayList<>();
 
         // Add something like new input fileParser(pipes, boundaryConditons) 
         // to read an input file.
-        Pipe p1 = new Pipe(1, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC);
-        Pipe p2 = new Pipe(2, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC);
-        Pipe p3 = new Pipe(3, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC);
+        Pipe p1t = new Pipe(1, 0.4, 200, 1000, 0.008, 0.002, 0, 0, SIMPLE_MOC, TRANSIENT);
+        Pipe p2t = new Pipe(2, 0.4, 200, 1000, 0.008, 0.002, 0, 0, SIMPLE_MOC, TRANSIENT);
+        Pipe p3t = new Pipe(3, 0.4, 200, 1000, 0.008, 0.002, 0, 0, SIMPLE_MOC, TRANSIENT);
         // Adds pipes to pipe list.
-        pipes.add(p1);
-        pipes.add(p2);
-        pipes.add(p3);
+        pipesTransient.add(p1t);
+        pipesTransient.add(p2t);
+        pipesTransient.add(p3t);
         
-        Reservoir r1 = new Reservoir(1, 100, 10, 0, new double[] {p1.getB()}, 
-                new double[] {p1.getR()});
-        Reservoir r2 = new Reservoir(2, 100, 0, 0, new double[] {p3.getB()}, 
-                new double[] {p2.getR()});
-        Reservoir r3 = new Reservoir(3, 100, 0, 0, new double[] {p3.getB()}, 
-                new double[] {p3.getR()});
-        Junction j1 = new Junction(4, 0, 
-                new double[] {p1.getB(), p2.getB(), p3.getB()}, 
-                new double[] {p1.getR(), p2.getR(), p3.getR()});
+        Pipe p1s = new Pipe(1, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC, STEADY_STATE);
+        Pipe p2s = new Pipe(2, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC, STEADY_STATE);
+        Pipe p3s = new Pipe(3, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC, STEADY_STATE);
+        // Adds pipes to pipe list.
+        pipesSteadyState.add(p1s);
+        pipesSteadyState.add(p2s);
+        pipesSteadyState.add(p3s);
+        
+        Reservoir r1t = new Reservoir(1, 100, 10, 0, new double[] {p1t.getB()}, 
+                new double[] {p1t.getR()});
+        Reservoir r2t = new Reservoir(2, 100, 0, 0, new double[] {p3t.getB()}, 
+                new double[] {p2t.getR()});
+        Reservoir r3t = new Reservoir(3, 100, 0, 0, new double[] {p3t.getB()}, 
+                new double[] {p3t.getR()});
+        Junction j1t = new Junction(4, 0, 
+                new double[] {p1t.getB(), p2t.getB(), p3t.getB()}, 
+                new double[] {p1t.getR(), p2t.getR(), p3t.getR()});
         
         // Adds boundary conditions (BC) to BCs list.
-        boundaryConditions.add(r3);
-        boundaryConditions.add(r2);
-        boundaryConditions.add(r1);
-        boundaryConditions.add(j1);
+        boundaryConditionsTransient.add(r3t);
+        boundaryConditionsTransient.add(r2t);
+        boundaryConditionsTransient.add(r1t);
+        boundaryConditionsTransient.add(j1t);
+        
+        Reservoir r1s = new Reservoir(1, 100, 10, 0, new double[] {p1s.getB()}, 
+                new double[] {p1s.getR()});
+        Reservoir r2s = new Reservoir(2, 100, 0, 0, new double[] {p3s.getB()}, 
+                new double[] {p2s.getR()});
+        Reservoir r3s = new Reservoir(3, 100, 0, 0, new double[] {p3s.getB()}, 
+                new double[] {p3s.getR()});
+        Junction j1s = new Junction(4, 0, 
+                new double[] {p1s.getB(), p2s.getB(), p3s.getB()}, 
+                new double[] {p1s.getR(), p2s.getR(), p3s.getR()});
+        
+        // Adds boundary conditions (BC) to BCs list.
+        boundaryConditionsSteadyState.add(r3s);
+        boundaryConditionsSteadyState.add(r2s);
+        boundaryConditionsSteadyState.add(r1s);
+        boundaryConditionsSteadyState.add(j1s);
 
         // Connectivity table.
         int[][] linkTable = new int[][]{{1, 0, 0, -1}, {0, -1, 0, 1}, {0, 0, -1, 1}};
+//        int[][] linkTable = new int[][]{{1, -1}};
 
         ArrayList listsAndTables = new ArrayList<>();
 
         // Groups all lists and tables and returns them in a single ArrayList.
-        listsAndTables.add(pipes);
-        listsAndTables.add(boundaryConditions);
+        listsAndTables.add(pipesTransient);
+        listsAndTables.add(pipesSteadyState);
+        listsAndTables.add(boundaryConditionsTransient);
+        listsAndTables.add(boundaryConditionsSteadyState);
         listsAndTables.add(linkTable);
         
         return listsAndTables;

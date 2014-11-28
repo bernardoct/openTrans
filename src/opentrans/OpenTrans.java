@@ -8,6 +8,8 @@ package opentrans;
 import BoundaryConditions.Problem;
 import java.io.File;
 import static Aux.Constants.SIMPLE_MOC;
+import static Aux.Constants.STEADY_STATE;
+import static Aux.Constants.TRANSIENT;
 
 /**
  *
@@ -23,7 +25,8 @@ public class OpenTrans {
     public static void main(String[] args) throws InterruptedException, Exception {
         
         Problem p = new Problem(0.002, SIMPLE_MOC, 1000, new File("/yay"));
-        p.calculate();
+        p.calculate(STEADY_STATE);
+        p.calculate(TRANSIENT);
     }
     
 }

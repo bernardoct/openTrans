@@ -35,13 +35,12 @@ public class Reservoir extends BoundaryCondition {
 
     @Override
     public double[] calculate(double[] pipesHQ) {
-        double pipeQ, pipeH;
 
-        double Cm = calcCM(pipesHQ[0], pipesHQ[1], B[0]);
-        double Bm = calcBM(pipesHQ[1], B[0], R[0]);
+        double Cm = calcCM(pipesHQ[0], pipesHQ[1], getB()[0]);
+        double Bm = calcBM(pipesHQ[1], getB()[0], getR()[0]);
 
-        Q[0] = (H - Cm) / Bm;
+        getQ()[0] = (getH() - Cm) / Bm;
 
-        return new double[]{H, Q[0]};
+        return new double[]{getH(), getQ()[0]};
     }
 }
