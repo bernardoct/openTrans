@@ -31,8 +31,6 @@ public class Reservoir extends BoundaryCondition {
 
         this.H = H;
         Q = new double[1];
-        this.B = B;
-        this.R = R;
     }
 
     @Override

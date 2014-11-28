@@ -23,22 +23,7 @@ import static Utils.InputParser.*;
 public class Problem {
 
     private static double t = 0;
-    public final double dt,
-            /**
-             *
-             */
-            /**
-             *
-             */
-
-    /**
-     *
-     */
-    simulationTime;
-
-    /**
-     *
-     */
+    public final double dt, simulationTime;
     public final int model;
     int[][] linkTable;
 
@@ -78,7 +63,7 @@ public class Problem {
         int nTimeSteps = (int) Math.ceil(simulationTime / dt);
         int[] bcsPipe = new int[]{-1, -1};
         int[] pipesBc;
-        int i0 = 0, nPipes = 0;
+        int i0 = 0, nPipes;
         double[] HQ, HQPipeInput, HQBcInput;
 
         double[][] tableQpipes = new double[linkTable.length][linkTable[0].length];
@@ -129,20 +114,22 @@ public class Problem {
             }
 
             if (i0 == 1) {
-            // Finds the pipes assigned to boundary condition, gets their Q's
+                // Finds the pipes assigned to boundary condition, gets their Q's
                 // and H's, and calculates the flow through he boundary condition.
                 int k;
 
-            // Build boundary condition (BC) input array, in which signals are
+                // Build boundary condition (BC) input array, in which signals are
                 // adjusted so that the BC is connected downstream the first pipe,
                 // upstream the second, and downstream the subsequent pipes.
                 for (int j = 0; j < linkTable[0].length; j++) {
 
-                // Adjusts the size of the input arrays for the BC based on the
+                    // Adjusts the size of the input arrays for the BC based on the
                     // number of pipes connected to it.
                     nPipes = 0;
-                    for (int i = 0; i < linkTable.length; i++) {
-                        nPipes += Math.abs(linkTable[i][j]);
+                    for (int[] linkTable1 : linkTable) {
+                        if (linkTable1[j] != 0) {
+                            nPipes += Math.abs(linkTable1[j]);
+                        }
                     }
                     pipesBc = new int[nPipes];
                     HQBcInput = new double[2 * nPipes];
@@ -151,7 +138,7 @@ public class Problem {
                     k = 0;
                     for (int i = 0; i < linkTable.length; i++) {
                         if (linkTable[i][j] != 0) {
-                            pipesBc[k] = linkTable[i][j] * i;
+                            pipesBc[k] = i;
                             HQBcInput[2 * k] = tableHpipes[i][j];
                             if (k > 0) {
                                 if (linkTable[i][j] > 0) {
@@ -173,7 +160,7 @@ public class Problem {
                     // Calculates the BC.
                     HQ = boundaryConditions.get(j).calculate(HQBcInput);
 
-                // Fixes back the directions of the flow rates following the 
+                    // Fixes back the directions of the flow rates following the 
                     // same logic as the loop above.
                     for (int i = 0; i < k; i++) {
                         tableHBcs[pipesBc[i]][j] = HQ[0];

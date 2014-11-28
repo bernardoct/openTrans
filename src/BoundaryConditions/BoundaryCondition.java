@@ -10,10 +10,10 @@ package BoundaryConditions;
  * @author bernardoct
  */
 public abstract class BoundaryCondition {
-    double H;
-    private final double elevation;
+    protected double H;
+    protected final double elevation;
     
-    double[] Q, B, R;
+    protected double[] Q, B, R;
 
     /**
      *
@@ -30,6 +30,8 @@ public abstract class BoundaryCondition {
     public BoundaryCondition(int ID, double elevation, double[] B, double[] R) {
         this.ID = ID;
         this.elevation = elevation;
+        this.B = B;
+        this.R = R;
     } 
     
     
