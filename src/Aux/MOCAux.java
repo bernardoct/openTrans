@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package opentrans;
+package Aux;
 
-import static opentrans.Constants.g;
+import static Aux.Constants.g;
 import static java.lang.Math.pow;
 
 /**

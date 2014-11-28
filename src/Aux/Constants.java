@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package opentrans;
+package Aux;
 
 import java.text.DecimalFormat;
 
@@ -14,11 +14,11 @@ public class Constants {
     /**
      *
      */
-    public static final int DWST = 1;
+    public static final int DOWNSTREAM = 1;
     /**
      *
      */
-    public static final int UPST = -1;
+    public static final int UPSTREAM = -1;
     /**
      *
      */
@@ -98,6 +98,6 @@ public class Constants {
       /**
        * 
        */
-      public static final int DGCM = 0;
+      public static final int DGCM = 1;
 
 }

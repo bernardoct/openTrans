@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package opentrans;
+package Pipe;
 
 import java.io.IOException;
 import java.util.Arrays;
-import static opentrans.MOCAux.*;
-import static opentrans.Constants.*;
+import static Aux.MOCAux.*;
+import static Aux.Constants.*;
 
 /**
  *
@@ -16,16 +16,20 @@ import static opentrans.Constants.*;
  */
 public class Pipe {
 
-    final double diameter, length, aws, f, dX, dt;
-    private final double B;
-    private final double R;
-    final double  area, elevationUpstream, elevationDownstream;
+    final double diameter, length, aws, f, dX, dt, B, R;
+    final double area, elevationUpstream, elevationDownstream;
     final int nNodes, model;
+
+    /**
+     *
+     */
+    public final int ID;
     int i0 = 0;
     double[] H, Qin, Qout, voidSpace;
 
     /**
-     * 
+     *
+     * @param ID
      * @param diameter
      * @param length
      * @param aws
@@ -33,10 +37,11 @@ public class Pipe {
      * @param dt
      * @param elevationUpstream
      * @param elevationDownstream
-     * @param model 
+     * @param model
      */
-    public Pipe(double diameter, double length, double aws, double f, double dt,   
+    public Pipe(int ID, double diameter, double length, double aws, double f, double dt,
             double elevationUpstream, double elevationDownstream, int model) {
+        this.ID = ID;
         this.diameter = diameter;
         this.length = length;
         this.aws = aws;
@@ -44,8 +49,8 @@ public class Pipe {
         this.dt = dt;
         this.elevationUpstream = elevationUpstream;
         this.elevationDownstream = elevationDownstream;
-        this.model = model;        
-        
+        this.model = model;
+
         this.dX = dt * aws;
         this.nNodes = (int) (Math.ceil((length / dX + 1) / 2) * 2 - 1);
         this.H = new double[nNodes];
@@ -58,51 +63,55 @@ public class Pipe {
     }
 
     /**
-     * 
+     *
      * @param i0
-     * @param Hu
-     * @param Hd
-     * @param Qu
-     * @param Qd
-     * @throws IOException 
+     * @param HQBcs Vector with upstream head, upstream flow rate, downstream
+     * head, and downstream flow rate, respectively.
+     * @return Vector with calculated upstream head, upstream flow rate, 
+     * downstream head, and downstream flow rate, respectively.
+     * @throws Exception
      */
-    public void calculate(int i0, double Hu, double Hd, double Qu, double Qd) throws IOException {
-        double[][] HQ;
+    public double[] calculate(int i0, double[] HQBcs) throws Exception {
+        double[][] HQQu;
 
         // Set up boundary conditions.
-        H[0] = Hu;
-        H[nNodes - 1] = Hd;
-        Qin[0] = Qu;
+        H[0] = HQBcs[0];
+        Qin[0] = HQBcs[1];
+        H[nNodes - 1] = HQBcs[2];
+        Qout[nNodes - 1] = HQBcs[3];
 
         if (model == SIMPLE_MOC) {
-            Qin[nNodes - 1] = Qd;
+            Qin[nNodes - 1] = HQBcs[3];
         } else {
-            Qout[nNodes - 1] = Qd;
+            throw new UnsupportedOperationException("DGCM not supported yet.");
         }
 
         // Calculate heads and flow rates.
-        HQ = calcMOC(H, Qin, i0);
+        HQQu = calcMOC(H, Qin, i0);
 
         // Update results.
-        H = Arrays.copyOf(HQ[0], nNodes);
-        Qin = Arrays.copyOf(HQ[1], nNodes);
+        H = Arrays.copyOf(HQQu[0], nNodes);
+        Qin = Arrays.copyOf(HQQu[1], nNodes);
+        Qout = Arrays.copyOf(HQQu[2], nNodes);
+        
+        return new double[] {H[1], Qin[1], H[nNodes - 2], Qout[nNodes - 2]};
     }
 
     /**
-     * 
+     *
      * @param H
      * @param Q
      * @param i0
-     * @return 
+     * @return
      */
-    public double[][] calcMOC(double[] H, double[] Q, int i0) {
+    private double[][] calcMOC(double[] H, double[] Q, int i0) {
         double CP, CM, BP, BM;
-        int nNodess = H.length;
         //HQ[0] is head and HQ[1] is flow rate.
-        double HQ[][] = new double[2][nNodess];
+        double HQ[][] = new double[3][nNodes];
 
         HQ[0] = H;
         HQ[1] = Q;
+        HQ[2] = Q;
 
         // MOC loop over the length
         for (int i = i0 + 1; i < nNodes - 1; i += 2) {
@@ -112,22 +121,23 @@ public class Pipe {
             BM = calcBM(Q[i + 1], getB(), getR());
             HQ[0][i] = calcH(BM, BP, CM, CP);
             HQ[1][i] = calcQ(BM, BP, CM, CP);
+            HQ[2][i] = HQ[1][i];
         }
 
         return HQ;
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public double getQus() {
         return Qin[1];
     }
-    
+
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public double getQds() {
         if (model == SIMPLE_MOC) {
@@ -136,18 +146,18 @@ public class Pipe {
             return Qout[nNodes - 2];
         }
     }
-    
+
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public double getHus() {
         return H[1];
     }
-    
+
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public double getHds() {
         return H[nNodes - 2];
@@ -166,5 +176,5 @@ public class Pipe {
     public double getR() {
         return R;
     }
-    
+
 }
