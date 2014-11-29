@@ -114,13 +114,7 @@ public class Problem {
                         HQPipeInput[3] = -tableQBcs[i][j];
                     }
                 }
-
-                // Throw exception in caso less than two boundary conditions
-                // are found for a pipe.
-//                if (bcsPipe[0] == -1 || bcsPipe[1] == -1) {
-//                    throw new Exception("Pipe " + i + "does not have two "
-//                            + "boundary conditions attached to it.");
-//                }
+                
                 // Calculate flow in the pipe.
                 HQ = pipes.get(i).calculate(i0, HQPipeInput);
 
@@ -184,14 +178,6 @@ public class Problem {
                     // same logic as the loop above.                                        
                     k = 0;
                     for (int i = 0; i < pipesBc.length; i++) {
-//                        if (linkTable[pipesBc[i]][j] == UPSTREAM) {
-//                            tableHBcs[pipesBc[i]][j] = HQ[0];
-//                            tableQBcs[pipesBc[i]][j] = HQ[k + 1];
-//                        }
-//                        if (linkTable[pipesBc[i]][j] == DOWNSTREAM) {
-//                            tableHBcs[pipesBc[i]][j] = HQ[0];
-//                            tableQBcs[pipesBc[i]][j] = -HQ[k + 1];
-//                        }
                         if (linkTable[pipesBc[i]][j] != NOT_CONNECTED) {
                             tableHBcs[pipesBc[i]][j] = HQ[0];
                             tableQBcs[pipesBc[i]][j] = HQ[k + 1];

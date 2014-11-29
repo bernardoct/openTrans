@@ -24,7 +24,7 @@ public class OpenTrans {
     public static void main(String[] args) throws InterruptedException, Exception {
         System.out.println(args[0] + "\n");
         Problem p = new Problem(0.002, SIMPLE_MOC, 1000, args[0]);
-        //p.calculate(STEADY_STATE);
+        p.calculate(STEADY_STATE);
         p.calculate(TRANSIENT);
     }
     
