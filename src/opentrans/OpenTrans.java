@@ -6,14 +6,13 @@
 package opentrans;
 
 import BoundaryConditions.Problem;
-import java.io.File;
 import static Aux.Constants.SIMPLE_MOC;
 import static Aux.Constants.STEADY_STATE;
 import static Aux.Constants.TRANSIENT;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class OpenTrans {
 
@@ -23,9 +22,9 @@ public class OpenTrans {
      * @throws java.lang.InterruptedException
      */
     public static void main(String[] args) throws InterruptedException, Exception {
-        
-        Problem p = new Problem(0.002, SIMPLE_MOC, 1000, new File("/yay"));
-        p.calculate(STEADY_STATE);
+        System.out.println(args[0] + "\n");
+        Problem p = new Problem(0.002, SIMPLE_MOC, 1000, args[0]);
+        //p.calculate(STEADY_STATE);
         p.calculate(TRANSIENT);
     }
     

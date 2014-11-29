@@ -7,7 +7,7 @@ package Exceptions;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class ElementsWithSameIDException extends Exception {
 

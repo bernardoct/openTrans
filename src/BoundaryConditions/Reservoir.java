@@ -9,7 +9,7 @@ import static Aux.MOCAux.*;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class Reservoir extends BoundaryCondition {
 

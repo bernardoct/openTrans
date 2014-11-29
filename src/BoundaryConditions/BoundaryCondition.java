@@ -9,7 +9,7 @@ import static Aux.Constants.dFmt;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public abstract class BoundaryCondition {
 

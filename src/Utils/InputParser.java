@@ -5,9 +5,11 @@
  */
 package Utils;
 
+import static Aux.Constants.DOWNSTREAM;
 import static Aux.Constants.SIMPLE_MOC;
 import static Aux.Constants.STEADY_STATE;
 import static Aux.Constants.TRANSIENT;
+import static Aux.Constants.UPSTREAM;
 import Pipe.Pipe;
 import java.util.ArrayList;
 import BoundaryConditions.BoundaryCondition;
@@ -28,9 +30,9 @@ public class InputParser {
 
     /**
      *
-     * @return
+     * @return Bernardo Carvalho Trindade - bct52@cornell.edu
      */
-    public static ArrayList parse() {
+    public static ArrayList parse(String filePath) {
         ArrayList<Pipe> pipesTransient = new ArrayList<>(), 
                 pipesSteadyState = new ArrayList<>();
         ArrayList<BoundaryCondition> boundaryConditionsTransient = new ArrayList<>(),
@@ -38,17 +40,17 @@ public class InputParser {
 
         // Add something like new input fileParser(pipes, boundaryConditons) 
         // to read an input file.
-        Pipe p1t = new Pipe(1, 0.4, 200, 1000, 0.008, 0.002, 0, 0, SIMPLE_MOC, TRANSIENT);
-        Pipe p2t = new Pipe(2, 0.4, 200, 1000, 0.008, 0.002, 0, 0, SIMPLE_MOC, TRANSIENT);
-        Pipe p3t = new Pipe(3, 0.4, 200, 1000, 0.008, 0.002, 0, 0, SIMPLE_MOC, TRANSIENT);
+        Pipe p1t = new Pipe(1, 0.4, 200, 1000, 0.008, 0.04, 0, 0, SIMPLE_MOC, TRANSIENT);
+        Pipe p2t = new Pipe(2, 0.4, 200, 1000, 0.008, 0.04, 0, 0, SIMPLE_MOC, TRANSIENT);
+        Pipe p3t = new Pipe(3, 0.4, 200, 1000, 0.008, 0.04, 0, 0, SIMPLE_MOC, TRANSIENT);
         // Adds pipes to pipe list.
         pipesTransient.add(p1t);
         pipesTransient.add(p2t);
         pipesTransient.add(p3t);
         
-        Pipe p1s = new Pipe(1, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC, STEADY_STATE);
-        Pipe p2s = new Pipe(2, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC, STEADY_STATE);
-        Pipe p3s = new Pipe(3, 0.4, 200, 1000, 0.008, 0.02, 0, 0, SIMPLE_MOC, STEADY_STATE);
+        Pipe p1s = new Pipe(1, 0.4, 200, 1000, 0.008, 0.04, 0, 0, SIMPLE_MOC, STEADY_STATE);
+        Pipe p2s = new Pipe(2, 0.4, 200, 1000, 0.008, 0.04, 0, 0, SIMPLE_MOC, STEADY_STATE);
+        Pipe p3s = new Pipe(3, 0.4, 200, 1000, 0.008, 0.04, 0, 0, SIMPLE_MOC, STEADY_STATE);
         // Adds pipes to pipe list.
         pipesSteadyState.add(p1s);
         pipesSteadyState.add(p2s);
@@ -87,8 +89,14 @@ public class InputParser {
         boundaryConditionsSteadyState.add(j1s);
 
         // Connectivity table.
-        int[][] linkTable = new int[][]{{1, 0, 0, -1}, {0, -1, 0, 1}, {0, 0, -1, 1}};
-//        int[][] linkTable = new int[][]{{1, -1}};
+//        int[][] linkTable = new int[][]{{UPSTREAM, 0, 0, DOWNSTREAM}, {0, DOWNSTREAM, 0, UPSTREAM}, {0, 0, DOWNSTREAM, UPSTREAM}};
+        int[][] linkTable = new int[][]{{UPSTREAM, 0, 0, DOWNSTREAM}, {0, DOWNSTREAM, 0, UPSTREAM}, {0, 0, UPSTREAM, DOWNSTREAM}};
+//        int[][] linkTable = new int[][]{{UPSTREAM, 0, DOWNSTREAM}, {0, DOWNSTREAM, UPSTREAM}};
+//        int[][] linkTable = new int[][]{{UPSTREAM, 0, DOWNSTREAM}, {0, UPSTREAM, DOWNSTREAM}};
+        // Works.
+//        int[][] linkTable = new int[][]{{UPSTREAM, DOWNSTREAM}};
+        // Doesn't work.
+//        int[][] linkTable = new int[][]{{DOWNSTREAM, UPSTREAM}};
 
         ArrayList listsAndTables = new ArrayList<>();
 

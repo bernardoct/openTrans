@@ -11,7 +11,7 @@ import static java.lang.Math.pow;
  * HAs a set of static functions to calculate the auxiliary variables of the
  * traditional MOC.
  *
- * @author Bernardo Trindade
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class MOCAux {
 

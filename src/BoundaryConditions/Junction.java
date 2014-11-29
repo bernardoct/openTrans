@@ -10,7 +10,7 @@ import static Aux.MOCAux.calcCP;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class Junction extends BoundaryConditions.BoundaryCondition {
 
@@ -34,15 +34,11 @@ public class Junction extends BoundaryConditions.BoundaryCondition {
         double[] bcHQ = new double[pipesHQ.length / 2 + 1];
 
         for (int i = 0; i < pipesHQ.length / 2; i++) {
-            pipeH = pipesHQ[2 * i];
-            if (i == 0) {
-                pipeQ = -pipesHQ[2 * i + 1];
-            } else {
-                pipeQ = pipesHQ[2 * i + 1];
-            }
+            pipeH = pipesHQ[2 * i];            
+            pipeQ = -pipesHQ[2 * i + 1];
 
-            CP[i] = calcCP(pipeH, pipeQ, getB()[i]);
-            BP[i] = calcBP(pipeQ, getB()[i], getR()[i]);
+            CP[i] = calcCP(pipeH, pipeQ, B[i]);
+            BP[i] = calcBP(pipeQ, B[i], R[i]);
 
             SB += 1 / BP[i];
             SC += CP[i] / BP[i];
@@ -50,13 +46,13 @@ public class Junction extends BoundaryConditions.BoundaryCondition {
 
         setH(SC / SB);
 
-        bcHQ[0] = getH();
+        bcHQ[0] = H;
         for (int i = 0; i < pipesHQ.length / 2; i++) {
 
-            Q[i] = -getH() / BP[i] + CP[i] / BP[i];
+            Q[i] = -H / BP[i] + CP[i] / BP[i];
 
             // Return the orientation of the first flow rate to its original. 
-            bcHQ[i + 1] = (i == 0? -Q[i]: Q[i]);
+            bcHQ[i + 1] = (i == 0? -Q[i]: -Q[i]);
         }
         
         return bcHQ;

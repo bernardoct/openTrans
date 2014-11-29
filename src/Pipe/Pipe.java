@@ -11,7 +11,7 @@ import static Aux.Constants.*;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class Pipe {
 

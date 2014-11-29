@@ -13,7 +13,7 @@ import Pipe.Pipe;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class PipeComparator implements Comparator<Pipe> {
 

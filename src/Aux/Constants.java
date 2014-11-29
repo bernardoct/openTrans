@@ -8,17 +8,21 @@ import java.text.DecimalFormat;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class Constants {
     /**
      *
      */
-    public static final int DOWNSTREAM = 1;
+    public static final int DOWNSTREAM = -1;
     /**
      *
      */
-    public static final int UPSTREAM = -1;
+    public static final int UPSTREAM = 1;
+    /**
+     * 
+     */
+    public static final int NOT_CONNECTED = 0;
     /**
      *
      */

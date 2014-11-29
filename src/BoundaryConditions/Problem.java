@@ -6,9 +6,11 @@
 package BoundaryConditions;
 
 import static Aux.Constants.CONVERGENCY_HEAD_THRESHOLD;
+import static Aux.Constants.DOWNSTREAM;
+import static Aux.Constants.NOT_CONNECTED;
 import static Aux.Constants.STEADY_STATE;
 import static Aux.Constants.TRANSIENT;
-import java.io.File;
+import static Aux.Constants.UPSTREAM;
 import java.util.ArrayList;
 import java.util.Collections;
 import Pipe.Pipe;
@@ -18,7 +20,7 @@ import static Utils.InputParser.*;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class Problem {
 
@@ -47,8 +49,8 @@ public class Problem {
      * @param simulationTime
      * @param inputFile
      */
-    public Problem(double dt, int model, double simulationTime, File inputFile) {
-        ArrayList parsedInput = parse();
+    public Problem(double dt, int model, double simulationTime, String inputFilePath) {
+        ArrayList parsedInput = parse(inputFilePath);
 
         this.dt = dt;
         this.model = model;
@@ -82,8 +84,9 @@ public class Problem {
         int[] bcsPipe = new int[]{-1, -1};
         int[] pipesBc;
         int i0 = 0, nPipes, countConverge = 0;
-        double[] HQ, HQPipeInput, HQBcInput,
-                lastRecordedHeads = new double[pipesSteadyState.size()];
+        double[] HQ, HQPipeInput = new double[4], HQBcInput,
+                lastRecordedFlowRates = new double[pipesSteadyState.size()];
+        double convergenceQ;
 
         if (timeRegime == TRANSIENT) {
             pipes = pipesTransient;
@@ -103,37 +106,35 @@ public class Problem {
             for (int i = 0; i < linkTable.length; i++) {
 
                 for (int j = 0; j < linkTable[0].length; j++) {
-                    if (linkTable[i][j] > 0) {
-                        bcsPipe[0] = j;
-                    } else if (linkTable[i][j] < 0) {
-                        bcsPipe[1] = j;
+                    if (linkTable[i][j] == UPSTREAM) {
+                        HQPipeInput[0] = tableHBcs[i][j];
+                        HQPipeInput[1] = tableQBcs[i][j];
+                    } else if (linkTable[i][j] == DOWNSTREAM) {
+                        HQPipeInput[2] = tableHBcs[i][j];
+                        HQPipeInput[3] = -tableQBcs[i][j];
                     }
                 }
 
                 // Throw exception in caso less than two boundary conditions
                 // are found for a pipe.
-                if (bcsPipe[0] == -1 || bcsPipe[1] == -1) {
-                    throw new Exception("Pipe " + i + "does not have two "
-                            + "boundary conditions attached to it.");
-                }
-
-                // Gather heads and flow rate into a vector to input in the 
-                // pipe class.
-                HQPipeInput = new double[]{
-                    tableHBcs[i][bcsPipe[0]],
-                    tableQBcs[i][bcsPipe[0]],
-                    tableHBcs[i][bcsPipe[1]],
-                    tableQBcs[i][bcsPipe[1]]};
-
+//                if (bcsPipe[0] == -1 || bcsPipe[1] == -1) {
+//                    throw new Exception("Pipe " + i + "does not have two "
+//                            + "boundary conditions attached to it.");
+//                }
                 // Calculate flow in the pipe.
                 HQ = pipes.get(i).calculate(i0, HQPipeInput);
 
                 // Update tables with pipe upstream and downstream 
                 // heads and flow rates.
-                tableHpipes[i][bcsPipe[0]] = HQ[0];
-                tableQpipes[i][bcsPipe[0]] = HQ[1];
-                tableHpipes[i][bcsPipe[1]] = HQ[2];
-                tableQpipes[i][bcsPipe[1]] = HQ[3];
+                for (int j = 0; j < linkTable[0].length; j++) {
+                    if (linkTable[i][j] == UPSTREAM) {
+                        tableHpipes[i][j] = HQ[0];
+                        tableQpipes[i][j] = HQ[1];
+                    } else if (linkTable[i][j] == DOWNSTREAM) {
+                        tableHpipes[i][j] = HQ[2];
+                        tableQpipes[i][j] = HQ[3];
+                    }
+                }
 
                 HQ = null;
             }
@@ -159,25 +160,19 @@ public class Problem {
                     pipesBc = new int[nPipes];
                     HQBcInput = new double[2 * nPipes];
 
-                    // Arranges pipe heads and flow rates to be input into the BC.
+                    // Arranges pipe heads and flow rates to be input into the BC.                    
                     k = 0;
                     for (int i = 0; i < linkTable.length; i++) {
-                        if (linkTable[i][j] != 0) {
-                            pipesBc[k] = i;
+                        if (linkTable[i][j] == UPSTREAM) {
                             HQBcInput[2 * k] = tableHpipes[i][j];
-                            if (k > 0) {
-                                if (linkTable[i][j] > 0) {
-                                    HQBcInput[2 * k + 1] = -tableQpipes[i][j];
-                                } else {
-                                    HQBcInput[2 * k + 1] = tableQpipes[i][j];
-                                }
-                            } else {
-                                if (linkTable[i][j] > 0) {
-                                    HQBcInput[2 * k + 1] = tableQpipes[i][j];
-                                } else {
-                                    HQBcInput[2 * k + 1] = -tableQpipes[i][j];
-                                }
-                            }
+                            HQBcInput[2 * k + 1] = tableQpipes[i][j];
+                            pipesBc[k] = i;
+                            k++;
+                        }
+                        if (linkTable[i][j] == DOWNSTREAM) {
+                            HQBcInput[2 * k] = tableHpipes[i][j];
+                            HQBcInput[2 * k + 1] = -tableQpipes[i][j];
+                            pipesBc[k] = i;
                             k++;
                         }
                     }
@@ -186,22 +181,22 @@ public class Problem {
                     HQ = boundaryConditions.get(j).calculate(HQBcInput);
 
                     // Fixes back the directions of the flow rates following the 
-                    // same logic as the loop above.
-                    for (int i = 0; i < k; i++) {
-                        tableHBcs[pipesBc[i]][j] = HQ[0];
-                        if (i > 0) {
-                            if (linkTable[i][j] > 0) {
-                                tableQBcs[pipesBc[i]][j] = -HQ[i + 1];
-                            } else {
-                                tableQBcs[pipesBc[i]][j] = HQ[i + 1];
-                            }
-                        } else {
-                            if (linkTable[i][j] > 0) {
-                                tableQBcs[pipesBc[i]][j] = HQ[i + 1];
-                            } else {
-                                tableQBcs[pipesBc[i]][j] = -HQ[i + 1];
-                            }
+                    // same logic as the loop above.                                        
+                    k = 0;
+                    for (int i = 0; i < pipesBc.length; i++) {
+//                        if (linkTable[pipesBc[i]][j] == UPSTREAM) {
+//                            tableHBcs[pipesBc[i]][j] = HQ[0];
+//                            tableQBcs[pipesBc[i]][j] = HQ[k + 1];
+//                        }
+//                        if (linkTable[pipesBc[i]][j] == DOWNSTREAM) {
+//                            tableHBcs[pipesBc[i]][j] = HQ[0];
+//                            tableQBcs[pipesBc[i]][j] = -HQ[k + 1];
+//                        }
+                        if (linkTable[pipesBc[i]][j] != NOT_CONNECTED) {
+                            tableHBcs[pipesBc[i]][j] = HQ[0];
+                            tableQBcs[pipesBc[i]][j] = HQ[k + 1];
                         }
+                        k++;
                     }
 
                     HQ = null;
@@ -217,24 +212,30 @@ public class Problem {
                 if (tn == 20) {
                     // Counts how many pipes converged.
                     for (int i = 0; i < pipes.size(); i++) {
-                        if (pipes.get(i).getQ1() <= lastRecordedHeads[i] / CONVERGENCY_HEAD_THRESHOLD
-                                && pipes.get(i).getQ1() >= lastRecordedHeads[i] * CONVERGENCY_HEAD_THRESHOLD) {
+                        convergenceQ = Math.abs(pipes.get(i).getQ1());
+                        if (convergenceQ
+                                <= lastRecordedFlowRates[i] / CONVERGENCY_HEAD_THRESHOLD
+                                && convergenceQ
+                                >= lastRecordedFlowRates[i] * CONVERGENCY_HEAD_THRESHOLD) {
                             countConverge++;
                         }
 
-                        lastRecordedHeads[i] = pipes.get(i).getQ1();
+                        lastRecordedFlowRates[i] = convergenceQ;
                     }
 
                     // If all pipes converged, copy value.
                     if (countConverge == pipes.size()) {
                         tn = nTimeSteps;
                         for (int i = 0; i < pipes.size(); i++) {
-                            pipesTransient.get(i).setSteadyState(pipesSteadyState.get(i).getSteadyState());
+                            pipesTransient.get(i).setSteadyState(
+                                    pipesSteadyState.get(i).getSteadyState());
                         }
-                        
+
                         for (int i = 0; i < boundaryConditions.size(); i++) {
-                            boundaryConditionsTransient.get(i).setH(boundaryConditionsSteadyState.get(i).getH());
-                            boundaryConditionsTransient.get(i).setQ(boundaryConditionsSteadyState.get(i).getQ());
+                            boundaryConditionsTransient.get(i).setH(
+                                    boundaryConditionsSteadyState.get(i).getH());
+                            boundaryConditionsTransient.get(i).setQ(
+                                    boundaryConditionsSteadyState.get(i).getQ());
                         }
                     } else {
                         // Reset counter and try again in a few time steps.
@@ -256,7 +257,7 @@ public class Problem {
         for (BoundaryCondition bc : boundaryConditions) {
             System.out.println(bc.toString());
         }
-        
+
         return 0;
     }
 

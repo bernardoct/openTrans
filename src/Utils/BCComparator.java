@@ -13,7 +13,7 @@ import BoundaryConditions.BoundaryCondition;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class BCComparator implements Comparator<BoundaryCondition> {
 
