@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import Pipe.Pipe;
 import Utils.BCComparator;
+import Utils.InputParser;
 import Utils.PipeComparator;
 import static Utils.InputParser.*;
 
@@ -49,12 +50,10 @@ public class Problem {
      * @param simulationTime
      * @param inputFile
      */
-    public Problem(double dt, int model, double simulationTime, String inputFilePath) {
-        ArrayList parsedInput = parse(inputFilePath);
+    public Problem(double dt, int model, double simulationTime, String inputFilePath) throws Exception {
+        InputParser p = new InputParser();
 
-        this.dt = dt;
-        this.model = model;
-        this.simulationTime = simulationTime;
+        ArrayList parsedInput = p.parse(inputFilePath);
 
         pipesTransient = (ArrayList<Pipe>) parsedInput.get(0);
         pipesSteadyState = (ArrayList<Pipe>) parsedInput.get(1);
@@ -62,15 +61,29 @@ public class Problem {
         boundaryConditionsSteadyState = (ArrayList<BoundaryCondition>) parsedInput.get(3);
         linkTable = (int[][]) parsedInput.get(4);
 
+        this.dt = ((double[]) parsedInput.get(5))[0];
+        this.model = (int) Math.round(((double[]) parsedInput.get(5))[1]);
+        this.simulationTime = ((double[]) parsedInput.get(5))[2];
+
         tableQpipes = new double[linkTable.length][linkTable[0].length];
         tableHpipes = new double[linkTable.length][linkTable[0].length];
         tableQBcs = new double[linkTable.length][linkTable[0].length];
         tableHBcs = new double[linkTable.length][linkTable[0].length];
 
         Collections.sort(pipesTransient, new PipeComparator());
-        Collections.sort(boundaryConditionsTransient, new BCComparator());
         Collections.sort(pipesSteadyState, new PipeComparator());
+        Collections.sort(boundaryConditionsTransient, new BCComparator());
         Collections.sort(boundaryConditionsSteadyState, new BCComparator());
+
+        String str = "";
+        for (int[] l : linkTable) {
+            for (int i : l) {
+                str += i + "\t";
+            }
+            System.out.println(str);
+            str = "";
+        }
+
     }
 
     /**
@@ -114,7 +127,7 @@ public class Problem {
                         HQPipeInput[3] = -tableQBcs[i][j];
                     }
                 }
-                
+
                 // Calculate flow in the pipe.
                 HQ = pipes.get(i).calculate(i0, HQPipeInput);
 
@@ -234,16 +247,32 @@ public class Problem {
 
         }
 
-        System.out.println("Pipes:");
-        for (Pipe p : pipes) {
-            System.out.println(p.toString());
-        }
+        if (timeRegime == STEADY_STATE) {
+            System.out.println();
 
-        System.out.println("Boundary Conditions:");
-        for (BoundaryCondition bc : boundaryConditions) {
-            System.out.println(bc.toString());
-        }
+            System.out.println("Pipes:");
+            for (Pipe pi : pipesSteadyState) {
+                System.out.println(pi.toString());
+            }
 
+            System.out.println("Boundary Conditions:");
+            for (BoundaryCondition bc : boundaryConditionsSteadyState) {
+                System.out.println(bc.toString());
+            }
+        } else {
+            System.out.println();
+
+            System.out.println("Pipes:");
+            for (Pipe pi : pipesTransient) {
+                System.out.println(pi.toString());
+            }
+
+            System.out.println("Boundary Conditions:");
+            for (BoundaryCondition bc : boundaryConditionsTransient) {
+                System.out.println(bc.toString());
+            }
+        }
+        
         return 0;
     }
 

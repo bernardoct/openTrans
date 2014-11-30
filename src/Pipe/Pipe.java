@@ -163,7 +163,7 @@ public class Pipe {
     
     @Override
     public String toString() {
-        return "Hup\tHdw\tQ\tB\tR\tL\ta\tdx\tnNodes\n" + dFmt.format(H[0]) + "\t" + 
+        return "ID\tHup\tHdw\tQ\tB\tR\tL\ta\tdx\tnNodes\n" + ID + "\t" + dFmt.format(H[0]) + "\t" + 
                 dFmt.format(H[nNodes-1]) + "\t" + dFmt.format(Qin[1]) + 
                 "\t" + dFmt.format(B) + "\t" + dFmt.format(R) + 
                  "\t" + dFmt.format(length)  + "\t" + dFmt.format(aws) + 

@@ -11,7 +11,7 @@ import static Aux.MOCAux.*;
  *
  * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
-public class Reservoir extends BoundaryCondition {
+public class ReservoirConstHead extends BoundaryCondition {
 
     double plantArea;
 
@@ -24,7 +24,7 @@ public class Reservoir extends BoundaryCondition {
      * @param B
      * @param R
      */
-    public Reservoir(int ID, double plantArea, double H, double elevation, double[] B,
+    public ReservoirConstHead(int ID, double plantArea, double H, double elevation, double[] B,
             double[] R) {
         super(ID, elevation, B, R);
         this.plantArea = plantArea;
@@ -36,10 +36,10 @@ public class Reservoir extends BoundaryCondition {
     @Override
     public double[] calculate(double[] pipesHQ) {
 
-        double Cm = calcCM(pipesHQ[0], pipesHQ[1], getB()[0]);
-        double Bm = calcBM(pipesHQ[1], getB()[0], getR()[0]);
+        double Cm = calcCM(pipesHQ[0], pipesHQ[1], B[0]);
+        double Bm = calcBM(pipesHQ[1], B[0], R[0]);
 
-        getQ()[0] = (getH() - Cm) / Bm;
+        Q[0] = (H - Cm) / Bm;
 
         return new double[]{getH(), getQ()[0]};
     }

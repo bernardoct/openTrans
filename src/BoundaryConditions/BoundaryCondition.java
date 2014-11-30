@@ -19,6 +19,7 @@ public abstract class BoundaryCondition {
     protected double[] Q;
     protected double[] B;
     protected double[] R;
+    private final String type;
 
     /**
      *
@@ -38,6 +39,7 @@ public abstract class BoundaryCondition {
         this.B = B;
         this.R = R;
         Q = new double[B.length];
+        type = this.getClass().toString().split("\\.")[1].substring(0, 3);
     }
 
     /**
@@ -49,7 +51,7 @@ public abstract class BoundaryCondition {
 
     @Override
     public String toString() {
-        String str = "H\tQ\tB\tR\n" + dFmt.format(H) + "\t";
+        String str = "Type\tID\tH\tQ\tB\tR\n" + type + "\t "+ ID + "\t" + dFmt.format(H) + "\t";
 
         for (int i = 0; i < Q.length; i++) {
             str += dFmt.format(Q[i]) + "\t";
