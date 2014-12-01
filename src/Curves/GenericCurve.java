@@ -11,10 +11,21 @@ package Curves;
  */
 public class GenericCurve extends Curve{
 
+    /**
+     *
+     * @param ID
+     * @param values
+     * @param range
+     */
     public GenericCurve(int ID, double[] values, double[] range) {
         super(ID, values, range);
     }
 
+    /**
+     *
+     * @param v
+     * @return
+     */
     @Override
     public double getValue(double v) {
         return mapValue(v);

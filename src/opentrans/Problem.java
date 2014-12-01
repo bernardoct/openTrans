@@ -19,10 +19,9 @@ import static Aux.Constants.dFmt;
 import java.util.ArrayList;
 import java.util.Collections;
 import Pipe.Pipe;
-import Utils.BCComparator;
-import Utils.InputParser;
-import Utils.PipeComparator;
-import static Utils.InputParser.*;
+import Utils.Comparators.BCComparator;
+import Utils.Input.InputParser;
+import Utils.Comparators.PipeComparator;
 import java.io.File;
 
 /**
@@ -32,7 +31,11 @@ import java.io.File;
 public class Problem {
 
     private static double t = 0;
-    public final double dt, simulationTime, printInterval;
+    public final double dt, simulationTime, printInterval, timeStartWriting;
+
+    /**
+     *
+     */
     public final int model;
     int[][] linkTable;
     String pathFolder = "";
@@ -55,7 +58,8 @@ public class Problem {
      * @param dt
      * @param model
      * @param simulationTime
-     * @param inputFile
+     * @param inputFilePath
+     * @throws java.lang.Exception
      */
     public Problem(double dt, int model, double simulationTime, String inputFilePath) throws Exception {
         InputParser p = new InputParser();
@@ -72,7 +76,8 @@ public class Problem {
         this.dt = ((double[]) parsedInput.get(5))[0];
         this.model = (int) Math.round(((double[]) parsedInput.get(5))[1]);
         this.simulationTime = ((double[]) parsedInput.get(5))[2];
-        this.printInterval = ((double[]) parsedInput.get(5))[3];
+        this.timeStartWriting = ((double[]) parsedInput.get(5))[3];
+        this.printInterval = ((double[]) parsedInput.get(5))[4];
 
         tableQpipes = new double[linkTable.length][linkTable[0].length];
         tableHpipes = new double[linkTable.length][linkTable[0].length];
@@ -108,7 +113,8 @@ public class Problem {
         int i0 = 0, nPipes, countConverge = 0;
         double[] HQ, HQPipeInput = new double[4], HQBcInput,
                 lastRecordedFlowRates = new double[pipesSteadyState.size()];
-        double convergenceQ, tWriteNext = 0, t = 0;
+        double convergenceQ, tWriteNext = 0;
+        t = 0;
 
         if (timeRegime == TRANSIENT) {
             pipes = pipesTransient;
@@ -154,8 +160,6 @@ public class Problem {
                         tableQpipes[i][j] = HQ[3];
                     }
                 }
-
-                HQ = null;
             }
 
             if (i0 == 1) {
@@ -195,7 +199,7 @@ public class Problem {
                             k++;
                         }
                     }
-
+                    
                     // Calculates the BC.
                     HQ = boundaryConditions.get(j).calculate(HQBcInput, t);
 
@@ -209,8 +213,6 @@ public class Problem {
                         }
                         k++;
                     }
-
-                    HQ = null;
                 }
             }
 
@@ -257,12 +259,12 @@ public class Problem {
                     }
                 }
             } else {
-                if (tn * dt > tWriteNext) {
+                if (t > tWriteNext && t > timeStartWriting) {
                     tWriteNext += printInterval;
                     String outputFile = pathFolder + "/Results/H" + dFmt.format(t) + ".tsv";
-                    Utils.AsyncFileWriter.write(new File(outputFile), pipesTransient, HEAD);
+                    Utils.Output.AsyncFileWriter.write(new File(outputFile), pipesTransient, HEAD);
                     outputFile = pathFolder + "/Results/Q" + dFmt.format(t) + ".tsv";
-                    Utils.AsyncFileWriter.write(new File(outputFile), pipesTransient, FLOW_RATE);
+                    Utils.Output.AsyncFileWriter.write(new File(outputFile), pipesTransient, FLOW_RATE);
                 }
             }
 

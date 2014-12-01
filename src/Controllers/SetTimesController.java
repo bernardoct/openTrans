@@ -15,6 +15,11 @@ public class SetTimesController extends Controller {
      
     final Curve timeCurve; 
 
+    /**
+     *
+     * @param ID
+     * @param timeCurve
+     */
     public SetTimesController(int ID, Curve timeCurve) {
         super(ID);
         this.timeCurve = timeCurve;

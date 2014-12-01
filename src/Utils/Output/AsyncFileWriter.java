@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Utils;
+package Utils.Output;
 
 import static Aux.Constants.HEAD;
 import Pipe.Pipe;
@@ -12,15 +12,15 @@ import java.util.ArrayList;
 
 /**
  *
- * @author martins.tuga@gmail.com
+ * @author Paulo Canais Martin - martins.tuga@gmail.com
  */
 public class AsyncFileWriter extends Thread {
 
     private File file = null;
-    private StringBuffer content = new StringBuffer();
+    private final StringBuffer content = new StringBuffer();
     private double x = 0;
-    private ArrayList<Pipe> pipesList;
-    private int whatToPrint;
+    private final ArrayList<Pipe> pipesList;
+    private final int whatToPrint;
 
     private AsyncFileWriter(File filePath, ArrayList<Pipe> pipesTransient, int whatToPrint) {
         this.file = filePath;
@@ -31,9 +31,8 @@ public class AsyncFileWriter extends Thread {
     /**
      *
      * @param filePath
-     * @param content
-     * @param H
-     * @param dx
+     * @param pipesTransient
+     * @param whatToPrint
      */
     public static void write(File filePath, ArrayList<Pipe> pipesTransient, int whatToPrint) {
         AsyncFileWriter instance
@@ -50,28 +49,6 @@ public class AsyncFileWriter extends Thread {
 
         try {
             java.io.FileWriter fwFrame = new java.io.FileWriter(this.file);
-
-//                  XYSeries seriesH = new XYSeries("Head");
-//                  int i = 0;
-//                  for (double h : H) {
-//                        seriesH.add(h, i * dx);
-//                  }
-//
-//                  XYSeriesCollection dataset = new XYSeriesCollection();
-//                  dataset.addSeries(seriesH);
-//
-//                  JFreeChart chart = ChartFactory.createXYLineChart(
-//                          "Line Chart Demo 2", // chart title
-//                          "X", // x axis label
-//                          "Y", // y axis label
-//                          dataset, // data
-//                          PlotOrientation.VERTICAL,
-//                          true, // include legend
-//                          true, // tooltips
-//                          false // urls
-//                          );
-//
-//                  ChartUtilities.saveChartAsPNG(new File(file.getPath() + ".png"), chart, 400, 300);
             for (Pipe p : pipesList) {
                 
                 if (whatToPrint == HEAD) {

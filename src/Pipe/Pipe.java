@@ -15,12 +15,53 @@ import static Aux.Constants.*;
  */
 public class Pipe {
 
-    public final double diameter, length, f, area, elevationUpstream, elevationDownstream;
+    public final double diameter,
+
+    /**
+     *
+     */
+    length,
+
+    /**
+     *
+     */
+    f,
+
+    /**
+     *
+     */
+    area,
+
+    /**
+     *
+     */
+    elevationUpstream,
+
+    /**
+     *
+     */
+    elevationDownstream;
+
+    /**
+     *
+     */
     public final int model;
 
+    /**
+     *
+     */
     public final int nNodes;
+
+    /**
+     *
+     */
     public final int ID;
-    public final double aws, dX;
+    public final double aws,
+
+    /**
+     *
+     */
+    dX;
     final double B;
     final double R;
 
@@ -77,8 +118,6 @@ public class Pipe {
     /**
      *
      * @param i0
-     * @param HQBcs Vector with upstream head, upstream flow rate, downstream
-     * head, and downstream flow rate, respectively.
      * @param timeRegime Either transient or steady state.
      * @return Vector with calculated upstream head, upstream flow rate,
      * downstream head, and downstream flow rate, respectively.
@@ -161,6 +200,10 @@ public class Pipe {
         }
     }
     
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "ID\tHup\tHdw\tQ\tB\tR\tL\ta\tdx\tnNodes\n" + ID + "\t" + dFmt.format(H[0]) + "\t" + 

@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Utils;
+package Utils.Input;
 
+import Utils.Comparators.PipeConnectivityComparator;
 import static Aux.Constants.DGCM;
 import static Aux.Constants.SIMPLE_MOC;
 import static Aux.Constants.STEADY_STATE;
@@ -183,7 +184,7 @@ public class InputParser {
         }
 
         return new double[]{Double.parseDouble(l[0]), methodTransient,
-            Double.parseDouble(l[2]), Double.parseDouble(l[3])};
+            Double.parseDouble(l[2]), Double.parseDouble(l[3]), Double.parseDouble(l[4])};
     }
 
     /**
@@ -196,7 +197,6 @@ public class InputParser {
     private void readPipe(String line, double dt, int method) throws IOException {
         String[] l = line.split("\\s+");
         Pipe p1, p2;
-        ArrayList<Double> B, R;
         int ID = Integer.parseInt(l[0]),
                 bcUs = Integer.parseInt(l[1]),
                 bcDw = Integer.parseInt(l[2]);
@@ -342,8 +342,8 @@ public class InputParser {
         boundaryConditionsSteadyState.add(new Valve(
                 Integer.parseInt(l[0]),
                 Double.parseDouble(l[1]),
-                getArrayOfB(pipesTransient, ID),
-                getArrayOfR(pipesTransient, ID),
+                getArrayOfB(pipesSteadyState, ID),
+                getArrayOfR(pipesSteadyState, ID),
                 Double.parseDouble(l[2]),
                 controllers.get(Integer.parseInt(l[3])),
                 (GenericCurve) curves.get(Integer.parseInt(l[4])),

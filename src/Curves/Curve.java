@@ -11,10 +11,19 @@ package Curves;
  */
 public abstract class Curve {
 
+    /**
+     *
+     */
     public final int ID;
     double[] values;
     double[] keys;
 
+    /**
+     *
+     * @param ID
+     * @param values
+     * @param keys
+     */
     public Curve(int ID, double[] values, double[] keys) {
         this.ID = ID;
         this.values = values;
@@ -28,14 +37,25 @@ public abstract class Curve {
      */
     public double mapValue(double v) {
         int i = 1;
-        while (v < keys[i - 1]) {
+        while (v < keys[i - 1] && i < keys.length - 1) {
             i++;
         }
-        
-        return (v - keys[i - 1]) * (values[i] - values[i - 1]) / 
-                (keys[i] - keys[i - 1]) + values[i - 1];
+
+        if (v > keys[keys.length - 1]) {
+            return values[values.length - 1];
+        } else if (v < keys[0]) {
+            return values[0];
+        } else {
+            return (v - keys[i - 1]) * (values[i] - values[i - 1])
+                    / (keys[i] - keys[i - 1]) + values[i - 1];
+        }
     }
 
+    /**
+     *
+     * @param v
+     * @return
+     */
     public abstract double getValue(double v);
 
 }

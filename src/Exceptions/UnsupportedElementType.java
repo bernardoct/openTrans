@@ -11,6 +11,10 @@ package Exceptions;
  */
 public class UnsupportedElementType extends Exception{
 
+    /**
+     *
+     * @param getClassElType
+     */
     public UnsupportedElementType(String getClassElType) {
         super("Unsupported " + getClassElType);
     }

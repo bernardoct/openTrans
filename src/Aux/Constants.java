@@ -50,7 +50,7 @@ public class Constants {
       /**
       *
       */
-      public static final double DT_STEADY_STATE = 0.1;
+      public static final double DT_STEADY_STATE = 1;
       /**
        * 
        */

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Utils;
+package Utils.Comparators;
 
 import java.util.Comparator;
 
@@ -13,6 +13,12 @@ import java.util.Comparator;
  */
 public class PipeConnectivityComparator implements Comparator<int[]> {
 
+    /**
+     *
+     * @param t
+     * @param t1
+     * @return
+     */
     @Override
     public int compare(int[] t, int[] t1) {
         if (t[0] < t1[0]) {

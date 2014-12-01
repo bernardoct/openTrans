@@ -13,11 +13,29 @@ import static Aux.Constants.dFmt;
  */
 public abstract class BoundaryCondition {
 
+    /**
+     *
+     */
     protected double H;
+
+    /**
+     *
+     */
     protected final double elevation;
 
+    /**
+     *
+     */
     protected double[] Q;
+
+    /**
+     *
+     */
     protected double[] B;
+
+    /**
+     *
+     */
     protected double[] R;
     private final String type;
 
@@ -32,6 +50,7 @@ public abstract class BoundaryCondition {
      * @param elevation
      * @param R
      * @param B
+     * @param timeRegime
      */
     public BoundaryCondition(int ID, double elevation, double[] B, double[] R, int timeRegime) {
         this.ID = ID;
@@ -45,11 +64,21 @@ public abstract class BoundaryCondition {
 
     /**
      *
-     * @param pipesHQ
-     * @return
+     * @param pipesHQ Array with heads and flow rates from connected pipes. IT 
+     * IS OF THE HIGHEST IMPORTANCE to pay attention to the fact that FLOW RATES
+     * to be used to calculate MOC CP's and BP's MUST HAVE THEIR SIGNALS
+     * REVERSED BEFORE ANY CALCULATION. See example in Valve.java.
+     * @param t Current time.
+     * @return Array with resulting heads and flow rates. DO NOT FORGET to
+     * reverse again the signs of the FLOW RATES CALCULATED FOR MOC CP's and 
+     * BP's.
      */
     public abstract double[] calculate(double[] pipesHQ, double t);
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString() {
         String str = "Type\tID\tH\tQ\tB\tR\n" + type + "\t "+ ID + "\t" + dFmt.format(H) + "\t";

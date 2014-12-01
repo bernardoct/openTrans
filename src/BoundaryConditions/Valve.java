@@ -26,6 +26,17 @@ public class Valve extends BoundaryCondition {
     final GenericCurve curve;
     final double area;
 
+    /**
+     *
+     * @param ID
+     * @param elevation
+     * @param B
+     * @param R
+     * @param diameter
+     * @param controller
+     * @param curve
+     * @param timeRegime
+     */
     public Valve(int ID, double elevation, double[] B, double[] R,
             double diameter, Controller controller, GenericCurve curve, int timeRegime) {
         super(ID, elevation, B, R, timeRegime);
@@ -40,15 +51,19 @@ public class Valve extends BoundaryCondition {
         double inH = pipesHQ[0],
                 inQ = -pipesHQ[1],
                 outH = pipesHQ[2],
-                outQ = pipesHQ[3];
+                outQ = pipesHQ[3],
+                inB = B[0],
+                inR = R[0],
+                outB = B[1],
+                outR = R[1];
 
-        double Cp = calcCP(inH, inQ, B[1]);
-        double Bp = calcBP(inQ, B[1], R[1]);
-        double Cm = calcCM(outH, outQ, B[0]);
-        double Bm = calcBM(outQ, B[0], R[0]);
+        double Cp = calcCP(inH, inQ, inB);
+        double Bp = calcBP(inQ, inB, inR);
+        double Cm = calcCM(outH, outQ, outB);
+        double Bm = calcBM(outQ, outB, outR);
 
         double opening = (timeRegime == TRANSIENT ? 
-                controller.getNewSetValue(t) : controller.getNewSetValue(1e-10));        
+                controller.getNewSetValue(t) : controller.getNewSetValue(0));        
         double tauCd = curve.getValue(opening);
         
         double Cv = pow(tauCd * area, 2) * g;
