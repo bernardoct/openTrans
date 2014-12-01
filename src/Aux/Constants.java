@@ -50,11 +50,11 @@ public class Constants {
       /**
       *
       */
-      public static final double DT_STEADY_STATE = 1;
+      public static final double DT_STEADY_STATE = 0.1;
       /**
        * 
        */
-      public static final double CONVERGENCY_HEAD_THRESHOLD = 1-1e-6;
+      public static final double CONVERGENCY_HEAD_THRESHOLD = 1-1e-5;
       /**
        * 
        */
@@ -63,5 +63,17 @@ public class Constants {
        * 
        */
       public static final int STILL_HAVE_NOT_CONVERGED = 0;
+      /**
+       * 
+       */
+      public static final int HEAD = 0;
+      /**
+       * 
+       */
+      public static final int FLOW_RATE = 1;
+      /**
+       * 
+       */
+      public static final int CONVERGENCY_CHECK = 20;
 
 }

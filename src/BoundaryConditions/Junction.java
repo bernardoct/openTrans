@@ -20,18 +20,19 @@ public class Junction extends BoundaryConditions.BoundaryCondition {
      * @param elevation
      * @param B
      * @param R
+     * @param timeRegime
      */
-    public Junction(int ID, double elevation, double[] B, double[] R) {
-        super(ID, elevation, B, R);
+    public Junction(int ID, double elevation, double[] B, double[] R, int timeRegime) {
+        super(ID, elevation, B, R, timeRegime);
     }
 
     @Override
-    public double[] calculate(double[] pipesHQ) {
+    public double[] calculate(double[] pipesHQ, double t) {
 
         double SB = 0, SC = 0, pipeQ, pipeH;
         double[] CP = new double[pipesHQ.length / 2], 
                 BP = new double[pipesHQ.length / 2];
-        double[] bcHQ = new double[pipesHQ.length / 2 + 1];
+        double[] bcHQ = new double[pipesHQ.length];
 
         for (int i = 0; i < pipesHQ.length / 2; i++) {
             pipeH = pipesHQ[2 * i];            
@@ -45,14 +46,14 @@ public class Junction extends BoundaryConditions.BoundaryCondition {
         }
 
         setH(SC / SB);
-
-        bcHQ[0] = H;
-        for (int i = 0; i < pipesHQ.length / 2; i++) {
+        
+        for (int i = 0; i < B.length; i++) {
 
             Q[i] = -H / BP[i] + CP[i] / BP[i];
 
-            // Return the orientation of the first flow rate to its original. 
-            bcHQ[i + 1] = (i == 0? -Q[i]: -Q[i]);
+            // Return the orientation of the first flow rate to its original.
+            bcHQ[2 * i] = H; 
+            bcHQ[2 * i + 1] = -Q[i];
         }
         
         return bcHQ;

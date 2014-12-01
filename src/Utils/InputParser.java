@@ -14,6 +14,12 @@ import java.util.ArrayList;
 import BoundaryConditions.BoundaryCondition;
 import BoundaryConditions.Junction;
 import BoundaryConditions.ReservoirConstHead;
+import BoundaryConditions.Valve;
+import Controllers.Controller;
+import Controllers.SetTimesController;
+import Curves.Curve;
+import Curves.GenericCurve;
+import Exceptions.UnsupportedElementType;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -24,7 +30,7 @@ import java.util.Map;
 
 /**
  *
- * @author bernardoct
+ * @author Bernardo Carvalho Trindade - bct52@cornell.edu
  */
 public class InputParser {
 
@@ -38,6 +44,8 @@ public class InputParser {
     ArrayList<BoundaryCondition> boundaryConditionsTransient = new ArrayList<>(),
             boundaryConditionsSteadyState = new ArrayList<>();
     ArrayList<int[]> preLinkTable = new ArrayList<>();
+    HashMap<Integer, Curve> curves = new HashMap<>();
+    HashMap<Integer, Controller> controllers = new HashMap<>();
     Map<Integer, ArrayList<Double>> bcB = new HashMap<>();
     Map<Integer, ArrayList<Double>> bcR = new HashMap<>();
 
@@ -99,6 +107,39 @@ public class InputParser {
                             }
                         }
                         break;
+                    case "[CURVES]":
+                        line = br.readLine();
+                        while (!line.matches("[ \t]*") && line.charAt(0) != '[') {
+                            while (line.length() > 0 && line.charAt(0) != '%' && !line.
+                                    matches("[ \t]*") && line.charAt(0) != '[') {
+                                // Reads junction info and creates both transient and steady state junction.
+                                readCurve(line);
+                                line = br.readLine();
+                            }
+                        }
+                        break;
+                    case "[CONTROLLERS]":
+                        line = br.readLine();
+                        while (!line.matches("[ \t]*") && line.charAt(0) != '[') {
+                            while (line.length() > 0 && line.charAt(0) != '%' && !line.
+                                    matches("[ \t]*") && line.charAt(0) != '[') {
+                                // Reads junction info and creates both transient and steady state junction.
+                                readController(line);
+                                line = br.readLine();
+                            }
+                        }
+                        break;
+                    case "[VALVES]":
+                        line = br.readLine();
+                        while (!line.matches("[ \t]*") && line.charAt(0) != '[') {
+                            while (line.length() > 0 && line.charAt(0) != '%' && !line.
+                                    matches("[ \t]*") && line.charAt(0) != '[') {
+                                // Reads junction info and creates both transient and steady state junction.
+                                readValve(line);
+                                line = br.readLine();
+                            }
+                        }
+                        break;
                 }
 
             }
@@ -142,7 +183,7 @@ public class InputParser {
         }
 
         return new double[]{Double.parseDouble(l[0]), methodTransient,
-            Double.parseDouble(l[2])};
+            Double.parseDouble(l[2]), Double.parseDouble(l[3])};
     }
 
     /**
@@ -191,7 +232,8 @@ public class InputParser {
                 Double.parseDouble(l[2]),
                 Double.parseDouble(l[3]),
                 getArrayOfB(pipesTransient, ID),
-                getArrayOfR(pipesTransient, ID)));
+                getArrayOfR(pipesTransient, ID),
+                TRANSIENT));
 
         boundaryConditionsSteadyState.add(new ReservoirConstHead(
                 Integer.parseInt(l[0]),
@@ -199,7 +241,8 @@ public class InputParser {
                 Double.parseDouble(l[2]),
                 Double.parseDouble(l[3]),
                 getArrayOfB(pipesSteadyState, ID),
-                getArrayOfR(pipesSteadyState, ID)));
+                getArrayOfR(pipesSteadyState, ID),
+                STEADY_STATE));
     }
 
     /**
@@ -215,14 +258,96 @@ public class InputParser {
                 Integer.parseInt(l[0]),
                 Double.parseDouble(l[1]),
                 getArrayOfB(pipesTransient, ID),
-                getArrayOfR(pipesTransient, ID)));
+                getArrayOfR(pipesTransient, ID),
+                TRANSIENT));
 
         boundaryConditionsSteadyState.add(new Junction(
                 Integer.parseInt(l[0]),
                 Double.parseDouble(l[1]),
                 getArrayOfB(pipesSteadyState, ID),
-                getArrayOfR(pipesSteadyState, ID)));
+                getArrayOfR(pipesSteadyState, ID),
+                STEADY_STATE));
 
+    }
+
+    /**
+     *
+     * @param line Line with Junction Parameters.
+     */
+    private void readCurve(String line) throws UnsupportedElementType {
+        String[] l = line.split("\\s+");
+        int ID = Integer.parseInt(l[0]);
+        double[] B, R;
+        Curve c = null;
+        int nPairs = (int) Math.round((l.length - 2) / 2);
+
+        double keys[] = new double[nPairs];
+        double values[] = new double[nPairs];
+
+        for (int i = 0; i < nPairs; i++) {
+            keys[i] = Double.parseDouble(l[2 + i]);
+            values[i] = Double.parseDouble(l[2 + nPairs + i]);
+        }
+
+        if (l[1].equals("Cd") || l[1].equals("time")) {
+            c = new GenericCurve(Integer.parseInt(l[0]),
+                    values,
+                    keys);
+        } else {
+            throw new UnsupportedElementType("Curve: " + l[1]);
+        }
+
+        curves.put(ID, c);
+    }
+
+    /**
+     *
+     * @param line Line with reservoir parameters.
+     */
+    private void readController(String line) throws UnsupportedElementType {
+        String[] l = line.split("\\s+");
+        int ID = Integer.parseInt(l[0]);
+        Controller c = null;
+
+        if (l[1].equals("setT")) {
+            int curveID = Integer.parseInt(l[2]);
+            c = new SetTimesController(ID, 
+                    curves.get(curveID));
+        } else {
+            throw new UnsupportedElementType("Controller: " + l[1]);
+        }
+
+        controllers.put(ID, c);
+    }
+
+    /**
+     *
+     * @param line Line with reservoir parameters.
+     */
+    private void readValve(String line) {
+        String[] l = line.split("\\s+");
+        int ID = Integer.parseInt(l[0]);
+        
+
+        boundaryConditionsTransient.add(new Valve(
+                Integer.parseInt(l[0]),
+                Double.parseDouble(l[1]),
+                getArrayOfB(pipesTransient, ID),
+                getArrayOfR(pipesTransient, ID),
+                Double.parseDouble(l[2]),
+                controllers.get(Integer.parseInt(l[3])), 
+                (GenericCurve) curves.get(Integer.parseInt(l[4])),
+                TRANSIENT));
+
+        boundaryConditionsSteadyState.add(new Valve(
+                Integer.parseInt(l[0]),
+                Double.parseDouble(l[1]),
+                getArrayOfB(pipesTransient, ID),
+                getArrayOfR(pipesTransient, ID),
+                Double.parseDouble(l[2]),
+                controllers.get(Integer.parseInt(l[3])),
+                (GenericCurve) curves.get(Integer.parseInt(l[4])),
+                STEADY_STATE));
     }
 
     /**

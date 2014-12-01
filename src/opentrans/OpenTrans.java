@@ -5,7 +5,6 @@
  */
 package opentrans;
 
-import BoundaryConditions.Problem;
 import static Aux.Constants.SIMPLE_MOC;
 import static Aux.Constants.STEADY_STATE;
 import static Aux.Constants.TRANSIENT;

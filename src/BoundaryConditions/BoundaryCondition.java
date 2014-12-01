@@ -24,7 +24,7 @@ public abstract class BoundaryCondition {
     /**
      *
      */
-    public final int ID;
+    public final int ID, timeRegime;
 
     /**
      *
@@ -33,11 +33,12 @@ public abstract class BoundaryCondition {
      * @param R
      * @param B
      */
-    public BoundaryCondition(int ID, double elevation, double[] B, double[] R) {
+    public BoundaryCondition(int ID, double elevation, double[] B, double[] R, int timeRegime) {
         this.ID = ID;
         this.elevation = elevation;
         this.B = B;
         this.R = R;
+        this.timeRegime = timeRegime;
         Q = new double[B.length];
         type = this.getClass().toString().split("\\.")[1].substring(0, 3);
     }
@@ -47,7 +48,7 @@ public abstract class BoundaryCondition {
      * @param pipesHQ
      * @return
      */
-    public abstract double[] calculate(double[] pipesHQ);
+    public abstract double[] calculate(double[] pipesHQ, double t);
 
     @Override
     public String toString() {

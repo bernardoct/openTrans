@@ -23,10 +23,11 @@ public class ReservoirConstHead extends BoundaryCondition {
      * @param elevation Reservoir elevation
      * @param B
      * @param R
+     * @param timeRegime
      */
     public ReservoirConstHead(int ID, double plantArea, double H, double elevation, double[] B,
-            double[] R) {
-        super(ID, elevation, B, R);
+            double[] R, int timeRegime) {
+        super(ID, elevation, B, R, timeRegime);
         this.plantArea = plantArea;
 
         this.H = H;
@@ -34,13 +35,13 @@ public class ReservoirConstHead extends BoundaryCondition {
     }
 
     @Override
-    public double[] calculate(double[] pipesHQ) {
+    public double[] calculate(double[] pipesHQ, double t) {
 
         double Cm = calcCM(pipesHQ[0], pipesHQ[1], B[0]);
         double Bm = calcBM(pipesHQ[1], B[0], R[0]);
 
         Q[0] = (H - Cm) / Bm;
 
-        return new double[]{getH(), getQ()[0]};
+        return new double[]{H, Q[0]};
     }
 }

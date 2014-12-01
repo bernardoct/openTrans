@@ -194,11 +194,27 @@ public class Pipe {
 
     /**
      *
-     * @return The head in the first node for steady state convergence
+     * @return The flow rate in the first node for steady state convergence
      * verification.
      */
     public double getQ1() {
         return Qin[1];
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public double[] getH() {
+        return H;
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    public double[] getQ() {
+        return Qin;
     }
 
 }

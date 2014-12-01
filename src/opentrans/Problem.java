@@ -3,14 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package BoundaryConditions;
+package opentrans;
 
+import static Aux.Constants.CONVERGENCY_CHECK;
+import BoundaryConditions.BoundaryCondition;
 import static Aux.Constants.CONVERGENCY_HEAD_THRESHOLD;
 import static Aux.Constants.DOWNSTREAM;
+import static Aux.Constants.FLOW_RATE;
+import static Aux.Constants.HEAD;
 import static Aux.Constants.NOT_CONNECTED;
 import static Aux.Constants.STEADY_STATE;
 import static Aux.Constants.TRANSIENT;
 import static Aux.Constants.UPSTREAM;
+import static Aux.Constants.dFmt;
 import java.util.ArrayList;
 import java.util.Collections;
 import Pipe.Pipe;
@@ -18,6 +23,7 @@ import Utils.BCComparator;
 import Utils.InputParser;
 import Utils.PipeComparator;
 import static Utils.InputParser.*;
+import java.io.File;
 
 /**
  *
@@ -26,9 +32,10 @@ import static Utils.InputParser.*;
 public class Problem {
 
     private static double t = 0;
-    public final double dt, simulationTime;
+    public final double dt, simulationTime, printInterval;
     public final int model;
     int[][] linkTable;
+    String pathFolder = "";
 
     ArrayList<Pipe> pipes = new ArrayList<>();
     ArrayList<Pipe> pipesTransient = new ArrayList<>();
@@ -54,6 +61,7 @@ public class Problem {
         InputParser p = new InputParser();
 
         ArrayList parsedInput = p.parse(inputFilePath);
+        pathFolder = (new File(inputFilePath)).getParent();
 
         pipesTransient = (ArrayList<Pipe>) parsedInput.get(0);
         pipesSteadyState = (ArrayList<Pipe>) parsedInput.get(1);
@@ -64,6 +72,7 @@ public class Problem {
         this.dt = ((double[]) parsedInput.get(5))[0];
         this.model = (int) Math.round(((double[]) parsedInput.get(5))[1]);
         this.simulationTime = ((double[]) parsedInput.get(5))[2];
+        this.printInterval = ((double[]) parsedInput.get(5))[3];
 
         tableQpipes = new double[linkTable.length][linkTable[0].length];
         tableHpipes = new double[linkTable.length][linkTable[0].length];
@@ -99,7 +108,7 @@ public class Problem {
         int i0 = 0, nPipes, countConverge = 0;
         double[] HQ, HQPipeInput = new double[4], HQBcInput,
                 lastRecordedFlowRates = new double[pipesSteadyState.size()];
-        double convergenceQ;
+        double convergenceQ, tWriteNext = 0, t = 0;
 
         if (timeRegime == TRANSIENT) {
             pipes = pipesTransient;
@@ -112,7 +121,10 @@ public class Problem {
         Collections.sort(pipes, new PipeComparator());
         Collections.sort(boundaryConditions, new BCComparator());
 
-        for (int tn = 0; tn < nTimeSteps; tn++) {
+        int timeStepLimit = (timeRegime == TRANSIENT ? nTimeSteps : 500000);
+
+        for (int tn = 0; tn < timeStepLimit; tn++) {
+            t += dt;
 
             // Finds the boundary conditions assigned to a pipe, gets their Q's
             // and H's, and calculates the flows in the pipes.
@@ -185,15 +197,15 @@ public class Problem {
                     }
 
                     // Calculates the BC.
-                    HQ = boundaryConditions.get(j).calculate(HQBcInput);
+                    HQ = boundaryConditions.get(j).calculate(HQBcInput, t);
 
                     // Fixes back the directions of the flow rates following the 
                     // same logic as the loop above.                                        
                     k = 0;
                     for (int i = 0; i < pipesBc.length; i++) {
                         if (linkTable[pipesBc[i]][j] != NOT_CONNECTED) {
-                            tableHBcs[pipesBc[i]][j] = HQ[0];
-                            tableQBcs[pipesBc[i]][j] = HQ[k + 1];
+                            tableHBcs[pipesBc[i]][j] = HQ[2 * k];
+                            tableQBcs[pipesBc[i]][j] = HQ[2 * k + 1];
                         }
                         k++;
                     }
@@ -208,7 +220,7 @@ public class Problem {
             // in the pipes to the head 20 time steps before. Copies heads and
             // flow rates from steady state to transient objects.
             if (timeRegime == STEADY_STATE) {
-                if (tn == 20) {
+                if (tn == CONVERGENCY_CHECK) {
                     // Counts how many pipes converged.
                     for (int i = 0; i < pipes.size(); i++) {
                         convergenceQ = Math.abs(pipes.get(i).getQ1());
@@ -224,7 +236,8 @@ public class Problem {
 
                     // If all pipes converged, copy value.
                     if (countConverge == pipes.size()) {
-                        tn = nTimeSteps;
+                        System.out.println(countConvergence * CONVERGENCY_CHECK);
+                        tn = timeStepLimit;
                         for (int i = 0; i < pipes.size(); i++) {
                             pipesTransient.get(i).setSteadyState(
                                     pipesSteadyState.get(i).getSteadyState());
@@ -242,6 +255,14 @@ public class Problem {
                         tn = 0;
                         countConvergence++;
                     }
+                }
+            } else {
+                if (tn * dt > tWriteNext) {
+                    tWriteNext += printInterval;
+                    String outputFile = pathFolder + "/Results/H" + dFmt.format(t) + ".tsv";
+                    Utils.AsyncFileWriter.write(new File(outputFile), pipesTransient, HEAD);
+                    outputFile = pathFolder + "/Results/Q" + dFmt.format(t) + ".tsv";
+                    Utils.AsyncFileWriter.write(new File(outputFile), pipesTransient, FLOW_RATE);
                 }
             }
 
@@ -272,7 +293,7 @@ public class Problem {
                 System.out.println(bc.toString());
             }
         }
-        
+
         return 0;
     }
 
